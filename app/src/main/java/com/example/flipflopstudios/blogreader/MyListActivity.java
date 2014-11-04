@@ -10,7 +10,7 @@ import android.widget.ArrayAdapter;
 
 public class MyListActivity extends ListActivity {
 
-    protected String[] mAndroidNames;
+    protected String[] mBlogPostTitles;
 
 
     @Override
@@ -20,9 +20,9 @@ public class MyListActivity extends ListActivity {
 
         Resources resources = getResources();
 
-        mAndroidNames = resources.getStringArray(R.array.android_names);
+        mBlogPostTitles = resources.getStringArray(R.array.android_names);
 
-        ArrayAdapter <String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,mAndroidNames);
+        ArrayAdapter <String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1, mBlogPostTitles);
         setListAdapter(adapter);
 
     }
