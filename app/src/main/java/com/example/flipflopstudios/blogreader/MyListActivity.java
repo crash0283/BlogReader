@@ -6,12 +6,15 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
@@ -28,7 +31,7 @@ public class MyListActivity extends ListActivity {
     protected String[] mBlogPostTitles;
     public static final int NUMBER_OF_POSTS = 20;
     public static final String TAG = MyListActivity.class.getSimpleName();
-
+    protected JSONObject mBlogData;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,13 +85,45 @@ public class MyListActivity extends ListActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private class GetBlogPostsTasks extends AsyncTask<Void,Void,String> {
+    private void updateList() {
+
+        if (mBlogData == null) {
+            //TODO:  Handle error
+
+
+        }
+        else {
+            try {
+                JSONArray jsonPosts = mBlogData.getJSONArray("posts");
+                mBlogPostTitles = new String[jsonPosts.length()];
+                for (int i = 0; i < jsonPosts.length(); i++) {
+
+                    JSONObject post = jsonPosts.getJSONObject(i);
+                    String title = post.getString("title");
+                    title = Html.fromHtml(title).toString();
+                    mBlogPostTitles[i] = title;
+
+                }
+
+                ArrayAdapter <String> adapter = new ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,mBlogPostTitles);
+                setListAdapter(adapter);
+
+            } catch (JSONException e) {
+                Log.e(TAG,"Exception Caught!",e);
+            }
+        }
+
+
+    }
+
+    private class GetBlogPostsTasks extends AsyncTask<Void,Void,JSONObject> {
 
 
         @Override
-        protected String doInBackground(Void... params) {
+        protected JSONObject doInBackground(Void... params) {
 
             int responseCode = -1;
+            JSONObject jsonResponse = null;
 
 
             try {
@@ -102,22 +137,19 @@ public class MyListActivity extends ListActivity {
 
                     InputStream inputStream = connection.getInputStream();
                     Reader reader = new InputStreamReader(inputStream);
-                    int contentLength = connection.getContentLength();
-                    char[] contentArray = new char[contentLength];
-                    reader.read(contentArray);
-                    String responseData = new String(contentArray);
-                    JSONObject jsonObject = new JSONObject(responseData);
-                    String status = jsonObject.getString("status");
-                    Log.v(TAG,status);
 
-                    JSONArray jsonPosts = jsonObject.getJSONArray("posts");
-                    for (int i = 0; i < jsonPosts.length(); i++) {
-
-                        JSONObject jsonPost = jsonPosts.getJSONObject(i);
-                        String title = jsonPost.getString("title");
-                        Log.v(TAG,"Post: " + i + " " + title);
-
+                    int nextCharacter; // read() returns an int, we cast it to char later
+                    String responseData = "";
+                    while(true){ // Infinite loop, can only be stopped by a "break" statement
+                        nextCharacter = reader.read(); // read() without parameters returns one character
+                        if(nextCharacter == -1) // A return value of -1 means that we reached the end
+                            break;
+                        responseData += (char) nextCharacter; // The += operator appends the character to the end of the string
                     }
+
+
+                    jsonResponse = new JSONObject(responseData);
+
                  }
                 else {
                     Log.i(TAG, "Unsuccessful Http Response Code: " + responseCode);
@@ -140,8 +172,16 @@ public class MyListActivity extends ListActivity {
                 Log.e(TAG, "Exception Caught!", e);
             }
 
-            return "Code: " + responseCode;
+            return jsonResponse;
+
+        }
+        @Override
+        protected void onPostExecute(JSONObject result) {
+            mBlogData = result;
+            updateList();
 
         }
     }
+
+
 }
