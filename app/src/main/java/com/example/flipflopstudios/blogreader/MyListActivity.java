@@ -11,7 +11,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -91,7 +97,33 @@ public class MyListActivity extends ListActivity {
                 connection.connect();
 
                 responseCode = connection.getResponseCode();
-                Log.i(TAG, String.valueOf(responseCode));
+
+                if (responseCode == HttpURLConnection.HTTP_OK) {
+
+                    InputStream inputStream = connection.getInputStream();
+                    Reader reader = new InputStreamReader(inputStream);
+                    int contentLength = connection.getContentLength();
+                    char[] contentArray = new char[contentLength];
+                    reader.read(contentArray);
+                    String responseData = new String(contentArray);
+                    JSONObject jsonObject = new JSONObject(responseData);
+                    String status = jsonObject.getString("status");
+                    Log.v(TAG,status);
+
+                    JSONArray jsonPosts = jsonObject.getJSONArray("posts");
+                    for (int i = 0; i < jsonPosts.length(); i++) {
+
+                        JSONObject jsonPost = jsonPosts.getJSONObject(i);
+                        String title = jsonPost.getString("title");
+                        Log.v(TAG,"Post: " + i + " " + title);
+
+                    }
+                 }
+                else {
+                    Log.i(TAG, "Unsuccessful Http Response Code: " + responseCode);
+
+
+                }
             }
             catch (MalformedURLException e) {
 
