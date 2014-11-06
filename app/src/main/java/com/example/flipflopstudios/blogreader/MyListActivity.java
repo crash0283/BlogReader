@@ -1,5 +1,6 @@
 package com.example.flipflopstudios.blogreader;
 
+import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.Context;
 import android.net.ConnectivityManager;
@@ -10,7 +11,10 @@ import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.json.JSONArray;
@@ -32,14 +36,17 @@ public class MyListActivity extends ListActivity {
     public static final int NUMBER_OF_POSTS = 20;
     public static final String TAG = MyListActivity.class.getSimpleName();
     protected JSONObject mBlogData;
+    protected ProgressBar mProgressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_my_list);
 
-        if(isNetworkAvailable()) {
+        mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
 
+        if(isNetworkAvailable()) {
+            mProgressBar.setVisibility(View.VISIBLE);
             GetBlogPostsTasks blogPostsTasks = new GetBlogPostsTasks();
             blogPostsTasks.execute();
 
@@ -85,11 +92,11 @@ public class MyListActivity extends ListActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    private void updateList() {
+    private void handleBlogResponse() {
+        mProgressBar.setVisibility(View.INVISIBLE);
 
         if (mBlogData == null) {
-            //TODO:  Handle error
-
+            updateDisplayForError();
 
         }
         else {
@@ -116,6 +123,18 @@ public class MyListActivity extends ListActivity {
 
     }
 
+    private void updateDisplayForError() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(getString(R.string.title));
+        builder.setMessage(getString(R.string.message));
+        builder.setPositiveButton(android.R.string.ok, null);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        TextView emptyTextView = (TextView) getListView().getEmptyView();
+        emptyTextView.setText(getString(R.string.no_items));
+    }
+
     private class GetBlogPostsTasks extends AsyncTask<Void,Void,JSONObject> {
 
 
@@ -127,7 +146,7 @@ public class MyListActivity extends ListActivity {
 
 
             try {
-                URL blogFeedUrl = new URL(" http://blog.teamtreehouse.com/api/get_recent_summary/?count=" + NUMBER_OF_POSTS);
+                URL blogFeedUrl = new URL("http://blog.teamtreehouse.com/api/get_recent_summary/?count=" + NUMBER_OF_POSTS);
                 HttpURLConnection connection = (HttpURLConnection) blogFeedUrl.openConnection();
                 connection.connect();
 
@@ -178,7 +197,7 @@ public class MyListActivity extends ListActivity {
         @Override
         protected void onPostExecute(JSONObject result) {
             mBlogData = result;
-            updateList();
+            handleBlogResponse();
 
         }
     }
