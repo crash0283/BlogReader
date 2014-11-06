@@ -7,6 +7,6 @@
     <string name="no_items">No Items To Display</string>
     <string name="title">Oops, sorry!</string>
     <string name="message">There was an error getting data from the blog!</string>
-
+    <string name="title_activity_blog_web_view">Blog Post</string>
 
 </resources>
