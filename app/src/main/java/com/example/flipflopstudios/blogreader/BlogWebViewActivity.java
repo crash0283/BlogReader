@@ -12,10 +12,6 @@ public class BlogWebViewActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_blog_web_view);
-
-
-
-
     }
 
 
