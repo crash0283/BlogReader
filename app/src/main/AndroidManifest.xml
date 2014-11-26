@@ -22,7 +22,7 @@
         <activity
             android:name="com.example.flipflopstudios.blogreader.BlogWebViewActivity"
             android:parentActivityName=".MyListActivity"
-            android:label="@string/title_activity_blog_web_view" >
+            android:label="@string/title_activity_blog_web_view">
         </activity>
     </application>
 
